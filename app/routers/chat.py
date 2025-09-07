@@ -32,7 +32,22 @@ async def chat(request: ChatRequest):
         # AI 답변 생성 (히스토리 포함)
         ai_service = get_ai_service()
         answer = ai_service.generate_answer_with_history(request.question, similar_docs, request.session_id)
-        sources = [doc.metadata.get('source', 'Unknown') for doc in similar_docs]
+        
+        # 향상된 출처 정보 생성
+        sources = []
+        for doc in similar_docs:
+            metadata = doc.metadata
+            filename = metadata.get('filename', 'Unknown')
+            file_type = metadata.get('file_type', '').upper()
+            
+            if metadata.get('page_number'):
+                source_info = f"📄 {filename} ({file_type}) - 페이지 {metadata['page_number']}"
+            elif metadata.get('chunk_number'):
+                source_info = f"📄 {filename} ({file_type}) - 청크 {metadata['chunk_number']}"
+            else:
+                source_info = f"📄 {filename} ({file_type})"
+            
+            sources.append(source_info)
         
         return ChatResponse(
             answer=answer,

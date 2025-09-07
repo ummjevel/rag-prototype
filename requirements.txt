@@ -11,3 +11,5 @@ langchain-core
 langchain-ollama
 pypdf
 langchain-chroma
+python-docx
+markdown

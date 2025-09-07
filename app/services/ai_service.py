@@ -8,6 +8,8 @@ import requests
 import json
 import os
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 class AIService:
@@ -174,7 +176,7 @@ class AIService:
         history_text = "\n\n**대화 기록:**\n"
         
         # 관련 대화 검색 (5개 이상일 때만)
-        relevant_conversations = self.search_relevant_conversations(session_id, current_question, k=3)
+        relevant_conversations = self.search_relevant_conversations(session_id, current_question, k=settings.max_related_conversations)
         
         if relevant_conversations:
             history_text += "[관련된 이전 대화]:\n"
@@ -186,8 +188,8 @@ class AIService:
                     history_text += f"관련대화 {i+1}) 질문: {question[:100]}{'...' if len(question) > 100 else ''}\n"
                     history_text += f"            답변: {answer[:150]}{'...' if len(answer) > 150 else ''}\n\n"
         
-        # 최근 5개 메시지 (RAG가 있으면 줄임)
-        recent_count = 3 if relevant_conversations else 10
+        # 최근 대화 메시지 (RAG 관련 대화가 있으면 줄임)
+        recent_count = settings.max_recent_with_rag if relevant_conversations else settings.max_recent_conversations
         recent_messages = messages[-recent_count:] if len(messages) > recent_count else messages
         
         if recent_messages:
